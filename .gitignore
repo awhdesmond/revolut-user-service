@@ -22,4 +22,5 @@ go.work
 
 /conf/*
 /build
-.envrc
+/.envrc
+/.data

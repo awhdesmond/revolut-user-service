@@ -22,4 +22,6 @@ go.work
 
 /conf/*
 /build
-.envrc
+/compose.yml
+/.envrc
+/.data
