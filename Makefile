@@ -15,9 +15,6 @@ test-coverage:
 	go test ./... -short -timeout 120s -race -count 1 -v -coverprofile=coverage.out
 	go tool cover -html=coverage.out
 
-clean:
-	rm -rf build cover.html coverage.out
-
 db:
 	./scripts/clean-db.sh postgres
 	./scripts/migrate-db.sh postgres
@@ -27,3 +24,6 @@ test-db:
 		psql -U postgres -c 'CREATE DATABASE postgres_test WITH OWNER postgres' || true
 	./scripts/clean-db.sh postgres_test
 	./scripts/migrate-db.sh postgres_test
+
+clean:
+	rm -rf build cover.html coverage.out
