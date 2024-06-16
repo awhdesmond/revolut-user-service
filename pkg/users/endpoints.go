@@ -17,7 +17,7 @@ func (r BaseResponse) Error() error {
 
 type UpsertRequest struct {
 	Username string `json:"username"`
-	DOB      string `json:"dateOfBirth"`
+	DoB      string `json:"dateOfBirth"`
 }
 
 type UpsertResponse struct {
@@ -32,7 +32,7 @@ func NewUpsertEndpoint(svc Service) endpoint.Endpoint {
 				Err: common.ErrEndpointReqMismatch,
 			}}, nil
 		}
-		err := svc.Upsert(ctx, req.Username, req.DOB)
+		err := svc.Upsert(ctx, req.Username, req.DoB)
 		return UpsertResponse{BaseResponse: BaseResponse{Err: err}}, nil
 	}
 }

@@ -6,12 +6,23 @@ services:
     ports:
       - 6379:6379
   postgres:
-    image: postgres:14-alpine
+    image: postgres:16.2
     ports:
       - 5432:5432
     volumes:
-      - ./.data/postgres:/var/lib/postgresql/data
+      - postgres-data:/var/lib/postgresql/data
     environment:
       - POSTGRES_PASSWORD=postgres
       - POSTGRES_USER=postgres
       - POSTGRES_DB=postgres
+  swagger-ui:
+    image: swaggerapi/swagger-ui:latest
+    ports:
+      - 3000:8080
+    volumes:
+      - ./docs/swagger.yaml:/revolut-user-svc/swagger.yaml
+    environment:
+      - SWAGGER_JSON=/revolut-user-svc/swagger.yaml
+
+volumes:
+  postgres-data:

@@ -124,7 +124,7 @@ func makeAPIServer(cfg ServerConfig, logger *zap.Logger) (*http.Server, error) {
 	}
 
 	store := users.NewStore(pgSess, logger)
-	svc := users.NewService(store)
+	svc := users.NewDefaultService(store)
 	handler := users.MakeHandler(svc)
 
 	r := mux.NewRouter()

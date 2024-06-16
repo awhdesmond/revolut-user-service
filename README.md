@@ -1,15 +1,14 @@
 # Revolut User Service
 
-This service prvovdes a HTTP-based API for managing users birthday.
+This service provides a HTTP-based API for managing users' date of birth.
 
 ## Dependencies
 
 ## Getting Started
 
 ```bash
-# Use docker-compose to deploy postgres, redis and api server, and OpenAPI
-mkdir -p ./.data/postgres
-docker-compose up
+# Deploy local postgres, redis, and Swagger OpenAPI
+docker-compose up -d
 
 # Perform SQL migrations on postgres
 brew install flyway
@@ -24,5 +23,10 @@ cp .envrc.template .envrc; export $(cat .envrc | xargs)
 
 ## Testing
 ```bash
+make test-db
 make test
 ```
+
+## OpenAPI
+
+View the OpenAPI spec for this service at http://localhost:3000.

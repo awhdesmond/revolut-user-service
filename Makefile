@@ -16,10 +16,11 @@ clean:
 	rm -rf build cover.html coverage.out
 
 db:
-	./scrtips/clean-db.sh
-	./scrtips/migrate-db.sh
+	./scripts/clean-db.sh postgres
+	./scripts/migrate-db.sh postgres
 
 test-db:
-	docer exec postgres \
-		psql -U postgres -c 'CREATE DATABASE postgres-test WITH OWNER postgres'
-
+	docker exec revolut-user-service_postgres_1 \
+		psql -U postgres -c 'CREATE DATABASE postgres_test WITH OWNER postgres' || true
+	./scripts/clean-db.sh postgres_test
+	./scripts/migrate-db.sh postgres_test

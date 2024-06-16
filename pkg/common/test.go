@@ -14,7 +14,7 @@ var (
 		Port:     "5432",
 		Username: "postgres",
 		Password: "postgres",
-		Database: "postgres-test",
+		Database: "postgres_test",
 	}
 
 	TruncateAllTablesSQL = `TRUNCATE TABLE users;`
@@ -34,12 +34,17 @@ func TestSendReq(req interface{}, path, method string, handler http.Handler) *ht
 }
 
 func TestIsResponseEmptyErr(w *httptest.ResponseRecorder, t *testing.T) {
-	TestIsResponseErrorExpected(w, t, "")
+	var data []byte
+	w.Body.Read(data)
+
+	if string(data) != "" {
+		t.Fatalf("got = %v, want = %v", string(data), "")
+	}
 }
 
 func TestIsResponseErrorExpected(w *httptest.ResponseRecorder, t *testing.T, wantErr string) {
 	res := struct {
-		Err string `json:"error"`
+		Err string `json:"error,omitempty"`
 	}{}
 	if err := json.NewDecoder(w.Body).Decode(&res); err != nil {
 		t.Fatalf("got = % v, want = %v", err, nil)

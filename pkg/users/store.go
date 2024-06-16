@@ -52,7 +52,7 @@ func (store *store) Upsert(ctx context.Context, username string, dob time.Time) 
 func (store *store) Read(ctx context.Context, username string) (User, error) {
 	var usr User
 	q := store.sess.WithContext(ctx).SQL().SelectFrom(dbtable).Where("username = ?", username)
-	err := q.One(usr)
+	err := q.One(&usr)
 
 	if common.IsDBErrorNoRows(err) {
 		return User{}, ErrUserNotFound
