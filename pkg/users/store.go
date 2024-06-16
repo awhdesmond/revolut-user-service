@@ -111,6 +111,10 @@ func (store *store) Read(ctx context.Context, username string) (User, error) {
 		return User{}, ErrUnexpectedDatabaseError
 	}
 
-	go store.writeToCache(context.Background(), usr)
+	go func() {
+		if err := store.writeToCache(context.Background(), usr); err != nil {
+			store.logger.Warn("cache error", zap.Error(err))
+		}
+	}()
 	return usr, nil
 }
