@@ -16,7 +16,9 @@ var (
 		Password: "postgres",
 		Database: "postgres_test",
 	}
-
+	TestRedisCfg = RedisCfg{
+		URI: "redis://localhost:6379/10",
+	}
 	TruncateAllTablesSQL = `TRUNCATE TABLE users;`
 )
 

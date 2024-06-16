@@ -10,6 +10,7 @@ import (
 
 	"github.com/awhdesmond/revolut-user-service/pkg/common"
 	"github.com/google/go-cmp/cmp"
+	"github.com/redis/go-redis/v9"
 	"github.com/stretchr/testify/suite"
 	"github.com/upper/db/v4"
 )
@@ -29,6 +30,7 @@ type apiTestSuite struct {
 	suite.Suite
 
 	pgSess  db.Session
+	rdb     redis.UniversalClient
 	store   Store
 	svc     Service
 	handler http.Handler
@@ -36,15 +38,20 @@ type apiTestSuite struct {
 
 func (ts *apiTestSuite) SetupSuite() {
 	logger, _ := common.InitZap("debug")
-	pgSess, err := common.NewPostgresDBSession(common.TestPgCfg)
+	pgSess, err := common.MakePostgresDBSession(common.TestPgCfg)
+	if err != nil {
+		ts.T().Fatalf("got = %v, want = %v", err, nil)
+	}
+	rdb, err := common.MakeRedisClient(common.TestRedisCfg)
 	if err != nil {
 		ts.T().Fatalf("got = %v, want = %v", err, nil)
 	}
 
-	store := NewStore(pgSess, logger)
+	store := NewStore(pgSess, rdb, logger)
 	svc := NewService(store, testTimeFn)
 
 	ts.pgSess = pgSess
+	ts.rdb = rdb
 	ts.store = store
 	ts.svc = svc
 	ts.handler = MakeHandler(ts.svc)
@@ -52,6 +59,7 @@ func (ts *apiTestSuite) SetupSuite() {
 
 func (ts *apiTestSuite) TearDownSuite() {
 	ts.pgSess.SQL().Exec(common.TruncateAllTablesSQL)
+	ts.rdb.FlushDB(context.TODO())
 	time.Sleep(3 * time.Second)
 }
 
@@ -233,6 +241,11 @@ func (ts *ReadApiTestSuite) Test() {
 			want:     fmt.Sprintf("Hello, apple! Your birthday is in %d day(s)", 275+daysToAddForLeapYear),
 		},
 		{
+			name:     "birthday has passed + read from cache",
+			username: "apple",
+			want:     fmt.Sprintf("Hello, apple! Your birthday is in %d day(s)", 275+daysToAddForLeapYear),
+		},
+		{
 			name:     "birthday has not passed",
 			username: "pear",
 			want:     fmt.Sprintf("Hello, pear! Your birthday is in %d day(s)", 32),
@@ -267,6 +280,7 @@ func (ts *ReadApiTestSuite) Test() {
 			if !cmp.Equal(resp.Message, tt.want) {
 				t.Fatalf("got = %v, want = %v", resp.Message, tt.want)
 			}
+			time.Sleep(1000 * time.Millisecond)
 		})
 	}
 }

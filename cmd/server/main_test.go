@@ -21,12 +21,33 @@ func (ts *testSuite) SetupSuite() {
 	os.Setenv("REVOLUT_USERS_SVC_POSTGRES_USERNAME", "postgres")
 	os.Setenv("REVOLUT_USERS_SVC_POSTGRES_PASSWORD", "postgres")
 	os.Setenv("REVOLUT_USERS_SVC_POSTGRES_DATABASE", "postgres_test")
+	os.Setenv("REVOLUT_USERS_SVC_REDIS_URI", "redis://localhost:6379/10")
 
 	go func() {
 		main()
 	}()
 	time.Sleep(2 * time.Second)
 }
+
+// func (ts *testSuite) TearDownSuite() {
+// 	var srvCfg ServerConfig
+// 	if err := viper.Unmarshal(&srvCfg); err != nil {
+// 		ts.T().Fatalf("got = %v, want = %v", err, nil)
+// 	}
+
+// 	pgSess, err := common.MakePostgresDBSession(srvCfg.PostgresSQLConfig)
+// 	if err != nil {
+// 		ts.T().Fatalf("got = %v, want = %v", err, nil)
+// 	}
+// 	rdb, err := common.MakeRedisClient(srvCfg.RedisCfg)
+// 	if err != nil {
+// 		ts.T().Fatalf("got = %v, want = %v", err, nil)
+// 	}
+
+// 	// pgSess.SQL().Exec(common.TruncateAllTablesSQL)
+// 	// rdb.FlushDB(context.TODO())
+// 	// time.Sleep(2 * time.Second)
+// }
 
 type ApiTestSuite struct {
 	testSuite

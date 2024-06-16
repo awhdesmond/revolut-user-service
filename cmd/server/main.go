@@ -29,6 +29,8 @@ const (
 	cfgFlagPostgresUsername = "postgres-username"
 	cfgFlagPostgresPassword = "postgres-password"
 
+	cfgFlagRedisURI = "redis-uri"
+
 	envVarPrefix = "REVOLUT_USERS_SVC"
 
 	defaultApiPort     = "8080"
@@ -39,6 +41,7 @@ const (
 
 type ServerConfig struct {
 	common.PostgresSQLConfig `mapstructure:",squash"`
+	common.RedisCfg          `mapstructure:",squash"`
 
 	Host        string `mapstructure:"host"`
 	Port        string `mapstructure:"port"`
@@ -66,6 +69,8 @@ func main() {
 	viper.SetDefault(cfgFlagPostgresDatabase, "")
 	viper.SetDefault(cfgFlagPostgresUsername, "")
 	viper.SetDefault(cfgFlagPostgresPassword, "")
+
+	viper.SetDefault(cfgFlagRedisURI, "")
 
 	viper.SetEnvPrefix(envVarPrefix)
 	viper.SetEnvKeyReplacer(strings.NewReplacer("-", "_"))
@@ -118,12 +123,16 @@ func main() {
 }
 
 func makeAPIServer(cfg ServerConfig, logger *zap.Logger) (*http.Server, error) {
-	pgSess, err := common.NewPostgresDBSession(cfg.PostgresSQLConfig)
+	pgSess, err := common.MakePostgresDBSession(cfg.PostgresSQLConfig)
+	if err != nil {
+		return nil, err
+	}
+	rdb, err := common.MakeRedisClient(cfg.RedisCfg)
 	if err != nil {
 		return nil, err
 	}
 
-	store := users.NewStore(pgSess, logger)
+	store := users.NewStore(pgSess, rdb, logger)
 	svc := users.NewDefaultService(store)
 	handler := users.MakeHandler(svc)
 
