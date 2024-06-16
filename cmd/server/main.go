@@ -38,7 +38,7 @@ const (
 )
 
 type ServerConfig struct {
-	common.PostgresSQLConfig
+	common.PostgresSQLConfig `mapstructure:",squash"`
 
 	Host        string `mapstructure:"host"`
 	Port        string `mapstructure:"port"`
@@ -57,7 +57,7 @@ func (cfg ServerConfig) HTTPMetricsBindAddress() string {
 func main() {
 	viper.SetDefault(cfgFlagHost, "")
 	viper.SetDefault(cfgFlagPort, defaultApiPort)
-	viper.SetDefault(cfgFlagPort, defaultMetricsPort)
+	viper.SetDefault(cfgFlagMetricsPort, defaultMetricsPort)
 	viper.SetDefault(cfgFlagLogLevel, defaultLogLevel)
 	viper.SetDefault(cfgFlagCORSOrigin, defaultCORSOrigin)
 
@@ -124,7 +124,7 @@ func makeAPIServer(cfg ServerConfig, logger *zap.Logger) (*http.Server, error) {
 	}
 
 	store := users.NewStore(pgSess, logger)
-	svc := users.NewService(store)
+	svc := users.NewDefaultService(store)
 	handler := users.MakeHandler(svc)
 
 	r := mux.NewRouter()

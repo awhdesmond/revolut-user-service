@@ -20,7 +20,13 @@ func errToHttpCode(err error) int {
 		return http.StatusNotFound
 	}
 	if common.ErrorContains(
-		[]error{ErrFutureDOBUsed, ErrInvalidDOB, ErrUsernameContainsNonLetters},
+		[]error{
+			ErrDoBFutureUsed,
+			ErrDoBInvalid,
+			ErrDoBTooOld,
+			ErrUsernameContainsNonLetters,
+			ErrUsernameIsEmpty,
+		},
 		err,
 	) {
 		return http.StatusBadRequest
@@ -77,7 +83,6 @@ func decodeUpsertRequest(_ context.Context, r *http.Request) (interface{}, error
 
 	vars := mux.Vars(r)
 	req.Username = vars[URLParamUsername]
-
 	return req, nil
 }
 
