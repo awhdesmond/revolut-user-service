@@ -5,8 +5,17 @@ import (
 	"encoding/json"
 	"net/http"
 	"net/http/httptest"
+	"os"
 	"testing"
 )
+
+func GetPostgresTestDb() string {
+	testDB := os.Getenv("REVOLUT_USERS_SVC_POSTGRES_TEST_DATABASE")
+	if testDB == "" {
+		testDB = "postgres_test"
+	}
+	return testDB
+}
 
 var (
 	TestPgCfg = PostgresSQLConfig{
@@ -14,9 +23,11 @@ var (
 		Port:     "5432",
 		Username: "postgres",
 		Password: "postgres",
-		Database: "postgres_test",
+		Database: GetPostgresTestDb(),
 	}
-
+	TestRedisCfg = RedisCfg{
+		URI: "redis://localhost:6379/10",
+	}
 	TruncateAllTablesSQL = `TRUNCATE TABLE users;`
 )
 
@@ -35,7 +46,10 @@ func TestSendReq(req interface{}, path, method string, handler http.Handler) *ht
 
 func TestIsResponseEmptyErr(w *httptest.ResponseRecorder, t *testing.T) {
 	var data []byte
-	w.Body.Read(data)
+	_, err := w.Body.Read(data)
+	if err != nil {
+		t.Fatalf("got = %v, want = %v", err, nil)
+	}
 
 	if string(data) != "" {
 		t.Fatalf("got = %v, want = %v", string(data), "")

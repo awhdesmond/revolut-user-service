@@ -2,12 +2,15 @@ package main
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"net/http"
 	"os"
 	"testing"
 	"time"
 
+	"github.com/awhdesmond/revolut-user-service/pkg/common"
+	"github.com/spf13/viper"
 	"github.com/stretchr/testify/suite"
 )
 
@@ -20,12 +23,35 @@ func (ts *testSuite) SetupSuite() {
 	os.Setenv("REVOLUT_USERS_SVC_POSTGRES_PORT", "5432")
 	os.Setenv("REVOLUT_USERS_SVC_POSTGRES_USERNAME", "postgres")
 	os.Setenv("REVOLUT_USERS_SVC_POSTGRES_PASSWORD", "postgres")
-	os.Setenv("REVOLUT_USERS_SVC_POSTGRES_DATABASE", "postgres_test")
+	os.Setenv("REVOLUT_USERS_SVC_POSTGRES_DATABASE", common.GetPostgresTestDb())
+	os.Setenv("REVOLUT_USERS_SVC_REDIS_URI", "redis://localhost:6379/10")
 
 	go func() {
 		main()
 	}()
 	time.Sleep(2 * time.Second)
+}
+
+func (ts *testSuite) TearDownSuite() {
+	var srvCfg ServerConfig
+	if err := viper.Unmarshal(&srvCfg); err != nil {
+		ts.T().Fatalf("got = %v, want = %v", err, nil)
+	}
+
+	pgSess, err := common.MakePostgresDBSession(srvCfg.PostgresSQLConfig)
+	if err != nil {
+		ts.T().Fatalf("got = %v, want = %v", err, nil)
+	}
+	rdb, err := common.MakeRedisClient(srvCfg.RedisCfg)
+	if err != nil {
+		ts.T().Fatalf("got = %v, want = %v", err, nil)
+	}
+
+	_, err = pgSess.SQL().Exec(common.TruncateAllTablesSQL)
+	if err != nil {
+		ts.T().Log(err)
+	}
+	rdb.FlushDB(context.TODO())
 }
 
 type ApiTestSuite struct {

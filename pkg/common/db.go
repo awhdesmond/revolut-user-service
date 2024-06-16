@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/redis/go-redis/v9"
 	"github.com/upper/db/v4"
 	postgresqladp "github.com/upper/db/v4/adapter/postgresql"
 )
@@ -23,7 +24,7 @@ func (c PostgresSQLConfig) Hostname() string {
 	return fmt.Sprintf("%s:%v", c.Host, c.Port)
 }
 
-func NewPostgresDBSession(cfg PostgresSQLConfig) (db.Session, error) {
+func MakePostgresDBSession(cfg PostgresSQLConfig) (db.Session, error) {
 	settings := postgresqladp.ConnectionURL{
 		User:     cfg.Username,
 		Password: cfg.Password,
@@ -48,4 +49,26 @@ func IsDBErrorNoRows(err error) bool {
 		return false
 	}
 	return strings.Contains(err.Error(), "no more rows in this result set")
+}
+
+// Redis
+
+type RedisCfg struct {
+	URI string `mapstructure:"redis-uri"`
+}
+
+func redisOptsToUnivOpts(opts *redis.Options) *redis.UniversalOptions {
+	return &redis.UniversalOptions{
+		Addrs:    []string{opts.Addr},
+		Password: opts.Password,
+	}
+}
+
+func MakeRedisClient(cfg RedisCfg) (redis.UniversalClient, error) {
+	opts, err := redis.ParseURL(cfg.URI)
+	if err != nil {
+		return nil, err
+	}
+	rdb := redis.NewUniversalClient(redisOptsToUnivOpts(opts))
+	return rdb, nil
 }

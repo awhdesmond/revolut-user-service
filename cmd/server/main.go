@@ -1,10 +1,12 @@
 package main
 
 import (
+	"errors"
 	"fmt"
 	"net/http"
 	"os"
 	"strings"
+	"syscall"
 
 	"github.com/awhdesmond/revolut-user-service/pkg/api"
 	"github.com/awhdesmond/revolut-user-service/pkg/common"
@@ -29,6 +31,8 @@ const (
 	cfgFlagPostgresUsername = "postgres-username"
 	cfgFlagPostgresPassword = "postgres-password"
 
+	cfgFlagRedisURI = "redis-uri"
+
 	envVarPrefix = "REVOLUT_USERS_SVC"
 
 	defaultApiPort     = "8080"
@@ -39,6 +43,7 @@ const (
 
 type ServerConfig struct {
 	common.PostgresSQLConfig `mapstructure:",squash"`
+	common.RedisCfg          `mapstructure:",squash"`
 
 	Host        string `mapstructure:"host"`
 	Port        string `mapstructure:"port"`
@@ -67,6 +72,8 @@ func main() {
 	viper.SetDefault(cfgFlagPostgresUsername, "")
 	viper.SetDefault(cfgFlagPostgresPassword, "")
 
+	viper.SetDefault(cfgFlagRedisURI, "")
+
 	viper.SetEnvPrefix(envVarPrefix)
 	viper.SetEnvKeyReplacer(strings.NewReplacer("-", "_"))
 	viper.AutomaticEnv()
@@ -74,9 +81,14 @@ func main() {
 	// Logger
 
 	logger, _ := common.InitZap(viper.GetString(cfgFlagLogLevel))
-	defer logger.Sync()
-	stdLog := zap.RedirectStdLog(logger)
-	defer stdLog()
+	defer func() {
+		err := logger.Sync()
+		if err != nil && !errors.Is(err, syscall.ENOTTY) {
+
+			logger.Warn("logger sync failed", zap.Error(err))
+		}
+	}()
+	defer zap.RedirectStdLog(logger)
 
 	var srvCfg ServerConfig
 	if err := viper.Unmarshal(&srvCfg); err != nil {
@@ -108,7 +120,10 @@ func main() {
 	go func() {
 		logger.Info("starting metrics server")
 		http.Handle("/metrics", promhttp.Handler())
-		http.ListenAndServe(srvCfg.HTTPMetricsBindAddress(), nil)
+		if err := http.ListenAndServe(srvCfg.HTTPMetricsBindAddress(), nil); err != nil {
+			logger.Panic("error starting metrics server", zap.Error(err))
+			os.Exit(1)
+		}
 	}()
 
 	// graceful shutdown
@@ -118,12 +133,16 @@ func main() {
 }
 
 func makeAPIServer(cfg ServerConfig, logger *zap.Logger) (*http.Server, error) {
-	pgSess, err := common.NewPostgresDBSession(cfg.PostgresSQLConfig)
+	pgSess, err := common.MakePostgresDBSession(cfg.PostgresSQLConfig)
+	if err != nil {
+		return nil, err
+	}
+	rdb, err := common.MakeRedisClient(cfg.RedisCfg)
 	if err != nil {
 		return nil, err
 	}
 
-	store := users.NewStore(pgSess, logger)
+	store := users.NewStore(pgSess, rdb, logger)
 	svc := users.NewDefaultService(store)
 	handler := users.MakeHandler(svc)
 

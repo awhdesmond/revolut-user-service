@@ -10,6 +10,7 @@ import (
 
 	"github.com/awhdesmond/revolut-user-service/pkg/common"
 	"github.com/google/go-cmp/cmp"
+	"github.com/redis/go-redis/v9"
 	"github.com/stretchr/testify/suite"
 	"github.com/upper/db/v4"
 )
@@ -29,6 +30,7 @@ type apiTestSuite struct {
 	suite.Suite
 
 	pgSess  db.Session
+	rdb     redis.UniversalClient
 	store   Store
 	svc     Service
 	handler http.Handler
@@ -36,22 +38,31 @@ type apiTestSuite struct {
 
 func (ts *apiTestSuite) SetupSuite() {
 	logger, _ := common.InitZap("debug")
-	pgSess, err := common.NewPostgresDBSession(common.TestPgCfg)
+	pgSess, err := common.MakePostgresDBSession(common.TestPgCfg)
+	if err != nil {
+		ts.T().Fatalf("got = %v, want = %v", err, nil)
+	}
+	rdb, err := common.MakeRedisClient(common.TestRedisCfg)
 	if err != nil {
 		ts.T().Fatalf("got = %v, want = %v", err, nil)
 	}
 
-	store := NewStore(pgSess, logger)
+	store := NewStore(pgSess, rdb, logger)
 	svc := NewService(store, testTimeFn)
 
 	ts.pgSess = pgSess
+	ts.rdb = rdb
 	ts.store = store
 	ts.svc = svc
 	ts.handler = MakeHandler(ts.svc)
 }
 
 func (ts *apiTestSuite) TearDownSuite() {
-	ts.pgSess.SQL().Exec(common.TruncateAllTablesSQL)
+	_, err := ts.pgSess.SQL().Exec(common.TruncateAllTablesSQL)
+	if err != nil {
+		ts.T().Log(err)
+	}
+	ts.rdb.FlushDB(context.TODO())
 	time.Sleep(3 * time.Second)
 }
 
@@ -205,9 +216,18 @@ func (ts *ReadApiTestSuite) SetupSuite() {
 	ts.apiTestSuite.SetupSuite()
 
 	// bootstrap some data
-	ts.svc.Upsert(context.Background(), "apple", "2000-03-03")
-	ts.svc.Upsert(context.Background(), "mango", "2000-06-01")
-	ts.svc.Upsert(context.Background(), "pear", "2000-07-03")
+	err := ts.svc.Upsert(context.Background(), "apple", "2000-03-03")
+	if err != nil {
+		ts.T().Fatalf("got = %v, want = %v", err, nil)
+	}
+	err = ts.svc.Upsert(context.Background(), "mango", "2000-06-01")
+	if err != nil {
+		ts.T().Fatalf("got = %v, want = %v", err, nil)
+	}
+	err = ts.svc.Upsert(context.Background(), "pear", "2000-07-03")
+	if err != nil {
+		ts.T().Fatalf("got = %v, want = %v", err, nil)
+	}
 }
 
 func TestReadApiTestSuite(t *testing.T) {
@@ -229,6 +249,11 @@ func (ts *ReadApiTestSuite) Test() {
 	}{
 		{
 			name:     "birthday has passed",
+			username: "apple",
+			want:     fmt.Sprintf("Hello, apple! Your birthday is in %d day(s)", 275+daysToAddForLeapYear),
+		},
+		{
+			name:     "birthday has passed + read from cache",
 			username: "apple",
 			want:     fmt.Sprintf("Hello, apple! Your birthday is in %d day(s)", 275+daysToAddForLeapYear),
 		},
@@ -267,6 +292,7 @@ func (ts *ReadApiTestSuite) Test() {
 			if !cmp.Equal(resp.Message, tt.want) {
 				t.Fatalf("got = %v, want = %v", resp.Message, tt.want)
 			}
+			time.Sleep(1000 * time.Millisecond)
 		})
 	}
 }

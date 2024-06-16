@@ -8,11 +8,8 @@ import (
 )
 
 var (
-	ErrBadPath                 = errors.New("common.ErrBadPath")
-	ErrInvalidRequest          = errors.New("common.ErrInvalidRequest")
-	ErrInvalidJSONBody         = errors.New("common.ErrInvalidJSONBody")
-	ErrEndpointReqMismatch     = errors.New("common.ErrEndpointReqMismatch")
-	ErrorEncodeInvalidResponse = errors.New("common.ErrorEncodeInvalidResponse")
+	ErrInvalidJSONBody     = errors.New("common.ErrInvalidJSONBody")
+	ErrEndpointReqMismatch = errors.New("common.ErrEndpointReqMismatch")
 )
 
 func EncodeErrorFactory(errToCode func(error) int) func(context.Context, error, http.ResponseWriter) {
@@ -22,17 +19,16 @@ func EncodeErrorFactory(errToCode func(error) int) func(context.Context, error, 
 
 		if code < 0 {
 			switch err {
-			case ErrInvalidRequest:
 			case ErrInvalidJSONBody:
 				w.WriteHeader(http.StatusBadRequest)
-			case ErrBadPath:
-				w.WriteHeader(http.StatusNotFound)
 			default:
 				w.WriteHeader(http.StatusInternalServerError)
 			}
 		} else {
 			w.WriteHeader(code)
 		}
-		json.NewEncoder(w).Encode(GenericJSON{"error": err.Error()})
+		if err := json.NewEncoder(w).Encode(GenericJSON{"error": err.Error()}); err != nil {
+			w.WriteHeader(http.StatusInternalServerError)
+		}
 	}
 }

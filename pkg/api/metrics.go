@@ -23,6 +23,7 @@ func NewMetricsMiddleware() *MetricsMiddleware {
 		Buckets:   prometheus.DefBuckets,
 	}, []string{"method", "path", "status"})
 
+	prometheus.MustRegister(histogram)
 	return &MetricsMiddleware{Histogram: histogram}
 }
 
@@ -45,10 +46,7 @@ func (mw *MetricsMiddleware) Handler(next http.Handler) http.Handler {
 func (mw *MetricsMiddleware) getRouteName(r *http.Request) string {
 	currentRoute := mux.CurrentRoute(r)
 	if currentRoute != nil {
-		if name := currentRoute.GetName(); len(name) > 0 {
-			return mw.urlToLabel(name)
-		}
-		if path, err := currentRoute.GetPathTemplate(); err != nil {
+		if path, err := currentRoute.GetPathTemplate(); err == nil {
 			if len(path) > 0 {
 				return mw.urlToLabel(path)
 			}
