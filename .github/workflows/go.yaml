@@ -59,10 +59,19 @@ jobs:
             -validateMigrationNaming=true \
             migrate
       - name: Run Unit tests
-        run: make test
+        run: |
+          go install github.com/jstemmer/go-junit-report/v2@latest
+          go test -short -timeout 120s -race -count 1 -v ./... 2>&1 | go-junit-report -set-exit-code -iocopy -out "${{ github.workspace }}/report.xml"
         env:
           REVOLUT_USERS_SVC_POSTGRES_HOST: localhost
           REVOLUT_USERS_SVC_POSTGRES_PORT: "5432"
           REVOLUT_USERS_SVC_POSTGRES_USERNAME: postgres
           REVOLUT_USERS_SVC_POSTGRES_PASSWORD: postgres
           REVOLUT_USERS_SVC_POSTGRES_DATABASE: postgres
+          REVOLUT_USERS_SVC_REDIS_URL: redis://localhost:6379/10
+      - name: Test Summary
+        uses: test-summary/action@v2
+        with:
+          paths: |
+            ${{ github.workspace }}/report.xml
+        if: always()

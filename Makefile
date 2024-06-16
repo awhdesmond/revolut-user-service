@@ -9,7 +9,10 @@ build:
 	go build -ldflags=$(LDFLAGS) -o build/server cmd/server/*.go
 
 test:
-	go test ./... -short -coverprofile=coverage.out
+	go test ./... -short -timeout 120s -race -count 1 -v
+
+test-coverage:
+	go test ./... -short -timeout 120s -race -count 1 -v -coverprofile=coverage.out
 	go tool cover -html=coverage.out
 
 clean:
