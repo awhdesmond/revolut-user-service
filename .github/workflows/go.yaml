@@ -51,7 +51,7 @@ jobs:
       - name: Run Flyway Migrate
         uses: docker://flyway/flyway:10
         with:
-          args: -url="jdbc:postgresql://127.0.0.1:5432/postgres_test -user="postgres" -password="postgres" -locations="filesystem:db/migrations/" -validateMigrationNaming=true migrate
+          args: -url="jdbc:postgresql://127.0.0.1:5432/postgres_test" -user="postgres" -password="postgres" -locations="filesystem:db/migrations/" -validateMigrationNaming=true migrate
       - name: Run Unit tests
         run: |
           go install github.com/jstemmer/go-junit-report/v2@latest
