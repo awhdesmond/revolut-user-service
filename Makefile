@@ -1,7 +1,7 @@
 GITCOMMIT?=$(shell git describe --dirty --always)
 CGO_ENABLED?=0
 BINARY:=server
-LDFLAGS:="-s -w -X github.com/awhdesmond/revolut-user-service/pkg/common/version.GitCommit=$(GITCOMMIT)"
+LDFLAGS:="-s -w -X github.com/awhdesmond/revolut-user-service/pkg/common.GitCommit=$(GITCOMMIT)"
 
 .PHONY: build clean test db
 

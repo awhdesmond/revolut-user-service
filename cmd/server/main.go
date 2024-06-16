@@ -1,10 +1,12 @@
 package main
 
 import (
+	"errors"
 	"fmt"
 	"net/http"
 	"os"
 	"strings"
+	"syscall"
 
 	"github.com/awhdesmond/revolut-user-service/pkg/api"
 	"github.com/awhdesmond/revolut-user-service/pkg/common"
@@ -80,12 +82,13 @@ func main() {
 
 	logger, _ := common.InitZap(viper.GetString(cfgFlagLogLevel))
 	defer func() {
-		if err := logger.Sync(); err != nil {
+		err := logger.Sync()
+		if err != nil && !errors.Is(err, syscall.ENOTTY) {
+
 			logger.Warn("logger sync failed", zap.Error(err))
 		}
 	}()
-	stdLog := zap.RedirectStdLog(logger)
-	defer stdLog()
+	defer zap.RedirectStdLog(logger)
 
 	var srvCfg ServerConfig
 	if err := viper.Unmarshal(&srvCfg); err != nil {

@@ -19,6 +19,7 @@ make build
 # or use direnv (https://direnv.net/)
 cp .envrc.template .envrc; export $(cat .envrc | xargs)
 ./build/server
+./scripts/simple-query.sh
 ```
 
 ## Testing
