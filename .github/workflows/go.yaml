@@ -55,11 +55,8 @@ jobs:
           PGPASSWORD=postgres psql -U postgres -c 'CREATE DATABASE postgres_test WITH OWNER postgres' || true
       - name: Run Flyway Migrate
         uses: docker://flyway/flyway:10
-        run: |
-          ./scripts/clean-db.sh postgres_test
-          ./scripts/migrate-db.sh postgres_test
-        # with:
-        #   args: -url="jdbc:postgresql://postgres:5432/postgres" -user="postgres" -password="postgres" -locations="filesystem:db/migrations/" -validateMigrationNaming=true migrate
+        with:
+          args: -url="jdbc:postgresql://postgres:5432/postgres" -user="postgres" -password="postgres" -locations="filesystem:db/migrations/" -validateMigrationNaming=true migrate
       - name: Run Unit tests
         run: |
           go install github.com/jstemmer/go-junit-report/v2@latest
