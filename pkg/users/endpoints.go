@@ -21,7 +21,7 @@ type UpsertRequest struct {
 }
 
 type UpsertResponse struct {
-	BaseResponse `json:"inline"`
+	BaseResponse `json:",inline"`
 }
 
 func NewUpsertEndpoint(svc Service) endpoint.Endpoint {
@@ -42,7 +42,7 @@ type ReadRequest struct {
 }
 
 type ReadResponse struct {
-	BaseResponse `json:"inline"`
+	BaseResponse `json:",inline"`
 	Message      string `json:"message,omitempty"`
 }
 

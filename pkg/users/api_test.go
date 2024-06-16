@@ -102,8 +102,8 @@ func (ts *UpsertApiTestSuite) Test() {
 			)
 
 			// status code should be HTTP 204
-			if w.Result().StatusCode != http.StatusNoContent {
-				t.Fatalf("got = %v, want = %v", w.Result().StatusCode, http.StatusNoContent)
+			if w.Code != http.StatusNoContent {
+				t.Fatalf("got = %v, want = %v", w.Code, http.StatusNoContent)
 			}
 
 			// should not contain any errors
@@ -255,8 +255,8 @@ func (ts *ReadApiTestSuite) Test() {
 			)
 
 			// status code should be HTTP 200
-			if w.Result().StatusCode != http.StatusOK {
-				t.Fatalf("got = %v, want = %v", w.Result().StatusCode, http.StatusOK)
+			if w.Code != http.StatusOK {
+				t.Fatalf("got = %v, want = %v", w.Code, http.StatusOK)
 			}
 
 			var resp ReadResponse
