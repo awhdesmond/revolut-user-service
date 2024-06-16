@@ -44,6 +44,22 @@ func (store *store) rdbUserKey(username string) string {
 	return fmt.Sprintf("revolut_user_service:username:%s", username)
 }
 
+func (store *store) writeToCache(ctx context.Context, usr User) error {
+	data, err := json.Marshal(usr)
+	if err != nil {
+		store.logger.Error("redis marshal error", zap.Error(err))
+		return err
+	}
+	cmd := store.rdb.Set(ctx, store.rdbUserKey(usr.Username), data, DefaultCacheTTL)
+	if cmd.Err() != nil {
+		store.logger.Error("cache error", zap.Error(err))
+		return ErrUnexpectedDatabaseError
+	}
+	return nil
+}
+
+// Upsert saves the username along with the date of a birth of a user. It also
+// implements the write-through cache policy to save the information to redis.
 func (store *store) Upsert(ctx context.Context, username string, dob time.Time) error {
 	_, err := store.sess.WithContext(ctx).SQL().Query(`
 		INSERT INTO users (username, date_of_birth)
@@ -57,15 +73,11 @@ func (store *store) Upsert(ctx context.Context, username string, dob time.Time) 
 		return ErrUnexpectedDatabaseError
 	}
 
-	cmd := store.rdb.Del(ctx, store.rdbUserKey(username))
-	if cmd.Err() != nil {
-		store.logger.Error("cache error", zap.Error(err))
-		return ErrUnexpectedDatabaseError
-	}
-
-	return nil
+	return store.writeToCache(ctx, User{Username: username, DoB: dob})
 }
 
+// Read retrieves the user from the cache (if it exists), else from the DB.
+// It saves the information to the cache when the cache does not have it.
 func (store *store) Read(ctx context.Context, username string) (User, error) {
 	var usr User
 
@@ -100,15 +112,8 @@ func (store *store) Read(ctx context.Context, username string) (User, error) {
 	}
 
 	go func() {
-		// asynchronously save to cache
-		data, err := json.Marshal(usr)
-		if err != nil {
-			store.logger.Error("redis marshal error", zap.Error(err))
-			return
-		}
-		cmd := store.rdb.Set(context.Background(), rdbUserKey, string(data), DefaultCacheTTL)
-		if cmd.Err() != nil {
-			store.logger.Error("redis cache error", zap.Error(err))
+		if err := store.writeToCache(context.Background(), usr); err != nil {
+			store.logger.Warn("cache error", zap.Error(err))
 		}
 	}()
 	return usr, nil

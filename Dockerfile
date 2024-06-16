@@ -1,4 +1,4 @@
-FROM golang:1.20 AS build-stage
+FROM golang:1.20 AS build
 
 WORKDIR /app
 
@@ -10,9 +10,9 @@ RUN go mod download
 COPY . .
 RUN make build
 
-FROM debian:bullseye
+FROM scratch
 
 WORKDIR /app
-RUN apt-get update && apt-get -y upgrade
-
-COPY --from=build-stage /app/build/ /app
+COPY --from=build /usr/share/zoneinfo /usr/share/zoneinfo
+COPY --from=build /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
+COPY --from=build /app/build/ /app
