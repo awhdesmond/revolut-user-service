@@ -5,8 +5,17 @@ import (
 	"encoding/json"
 	"net/http"
 	"net/http/httptest"
+	"os"
 	"testing"
 )
+
+func postgresTestDb() string {
+	testDB := os.Getenv("REVOLUT_USERS_SVC_POSTGRES_TEST_DATABASE")
+	if testDB == "" {
+		testDB = "postgres_test"
+	}
+	return testDB
+}
 
 var (
 	TestPgCfg = PostgresSQLConfig{
@@ -14,7 +23,7 @@ var (
 		Port:     "5432",
 		Username: "postgres",
 		Password: "postgres",
-		Database: "postgres_test",
+		Database: postgresTestDb(),
 	}
 	TestRedisCfg = RedisCfg{
 		URI: "redis://localhost:6379/10",

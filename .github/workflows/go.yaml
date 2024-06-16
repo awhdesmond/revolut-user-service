@@ -48,11 +48,6 @@ jobs:
         uses: golangci/golangci-lint-action@v6
         with:
           version: v1.58
-      - name: Install PostgreSQL client
-        run: |
-          apt-get update
-          apt-get install --yes postgresql-client
-          PGPASSWORD=postgres psql -U postgres -c 'CREATE DATABASE postgres_test WITH OWNER postgres' || true
       - name: Run Flyway Migrate
         uses: docker://flyway/flyway:10
         with:
