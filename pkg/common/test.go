@@ -9,7 +9,7 @@ import (
 	"testing"
 )
 
-func postgresTestDb() string {
+func GetPostgresTestDb() string {
 	testDB := os.Getenv("REVOLUT_USERS_SVC_POSTGRES_TEST_DATABASE")
 	if testDB == "" {
 		testDB = "postgres_test"
@@ -23,7 +23,7 @@ var (
 		Port:     "5432",
 		Username: "postgres",
 		Password: "postgres",
-		Database: postgresTestDb(),
+		Database: GetPostgresTestDb(),
 	}
 	TestRedisCfg = RedisCfg{
 		URI: "redis://localhost:6379/10",
