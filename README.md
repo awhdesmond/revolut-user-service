@@ -4,6 +4,13 @@ This service provides a HTTP-based API for managing users' date of birth.
 
 ## Dependencies
 
+| Dependency | Version |
+| ---------- | ------- |
+| Go         | 1.20    |
+| Postgres   | 16.2    |
+| Redis      | 7.0     |
+
+
 ## Getting Started
 
 ```bash
@@ -31,3 +38,7 @@ make test
 ## OpenAPI
 
 View the OpenAPI spec for this service at http://localhost:3000.
+
+## GitHub Actions
+
+View the GitHub Actions Workflows under `.github` directory.
