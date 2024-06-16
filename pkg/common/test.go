@@ -37,7 +37,10 @@ func TestSendReq(req interface{}, path, method string, handler http.Handler) *ht
 
 func TestIsResponseEmptyErr(w *httptest.ResponseRecorder, t *testing.T) {
 	var data []byte
-	w.Body.Read(data)
+	_, err := w.Body.Read(data)
+	if err != nil {
+		t.Fatalf("got = %v, want = %v", err, nil)
+	}
 
 	if string(data) != "" {
 		t.Fatalf("got = %v, want = %v", string(data), "")

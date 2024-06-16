@@ -58,7 +58,10 @@ func (ts *apiTestSuite) SetupSuite() {
 }
 
 func (ts *apiTestSuite) TearDownSuite() {
-	ts.pgSess.SQL().Exec(common.TruncateAllTablesSQL)
+	_, err := ts.pgSess.SQL().Exec(common.TruncateAllTablesSQL)
+	if err != nil {
+		ts.T().Log(err)
+	}
 	ts.rdb.FlushDB(context.TODO())
 	time.Sleep(3 * time.Second)
 }
@@ -213,9 +216,13 @@ func (ts *ReadApiTestSuite) SetupSuite() {
 	ts.apiTestSuite.SetupSuite()
 
 	// bootstrap some data
-	ts.svc.Upsert(context.Background(), "apple", "2000-03-03")
-	ts.svc.Upsert(context.Background(), "mango", "2000-06-01")
-	ts.svc.Upsert(context.Background(), "pear", "2000-07-03")
+	err := ts.svc.Upsert(context.Background(), "apple", "2000-03-03")
+	err = ts.svc.Upsert(context.Background(), "mango", "2000-06-01")
+	err = ts.svc.Upsert(context.Background(), "pear", "2000-07-03")
+
+	if err != nil {
+		ts.T().Fatalf("got = %v, want = %v", err, nil)
+	}
 }
 
 func TestReadApiTestSuite(t *testing.T) {

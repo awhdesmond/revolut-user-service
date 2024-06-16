@@ -33,6 +33,8 @@ func EncodeErrorFactory(errToCode func(error) int) func(context.Context, error, 
 		} else {
 			w.WriteHeader(code)
 		}
-		json.NewEncoder(w).Encode(GenericJSON{"error": err.Error()})
+		if err := json.NewEncoder(w).Encode(GenericJSON{"error": err.Error()}); err != nil {
+			w.WriteHeader(http.StatusInternalServerError)
+		}
 	}
 }

@@ -79,7 +79,11 @@ func main() {
 	// Logger
 
 	logger, _ := common.InitZap(viper.GetString(cfgFlagLogLevel))
-	defer logger.Sync()
+	defer func() {
+		if err := logger.Sync(); err != nil {
+			logger.Warn("logger sync failed", zap.Error(err))
+		}
+	}()
 	stdLog := zap.RedirectStdLog(logger)
 	defer stdLog()
 
@@ -113,7 +117,10 @@ func main() {
 	go func() {
 		logger.Info("starting metrics server")
 		http.Handle("/metrics", promhttp.Handler())
-		http.ListenAndServe(srvCfg.HTTPMetricsBindAddress(), nil)
+		if err := http.ListenAndServe(srvCfg.HTTPMetricsBindAddress(), nil); err != nil {
+			logger.Panic("error starting metrics server", zap.Error(err))
+			os.Exit(1)
+		}
 	}()
 
 	// graceful shutdown
