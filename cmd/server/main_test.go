@@ -47,7 +47,10 @@ func (ts *testSuite) TearDownSuite() {
 		ts.T().Fatalf("got = %v, want = %v", err, nil)
 	}
 
-	pgSess.SQL().Exec(common.TruncateAllTablesSQL)
+	_, err = pgSess.SQL().Exec(common.TruncateAllTablesSQL)
+	if err != nil {
+		ts.T().Log(err)
+	}
 	rdb.FlushDB(context.TODO())
 }
 
