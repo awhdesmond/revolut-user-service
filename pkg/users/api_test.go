@@ -217,9 +217,14 @@ func (ts *ReadApiTestSuite) SetupSuite() {
 
 	// bootstrap some data
 	err := ts.svc.Upsert(context.Background(), "apple", "2000-03-03")
+	if err != nil {
+		ts.T().Fatalf("got = %v, want = %v", err, nil)
+	}
 	err = ts.svc.Upsert(context.Background(), "mango", "2000-06-01")
+	if err != nil {
+		ts.T().Fatalf("got = %v, want = %v", err, nil)
+	}
 	err = ts.svc.Upsert(context.Background(), "pear", "2000-07-03")
-
 	if err != nil {
 		ts.T().Fatalf("got = %v, want = %v", err, nil)
 	}
