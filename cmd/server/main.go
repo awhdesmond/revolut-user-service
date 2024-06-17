@@ -31,13 +31,14 @@ const (
 	cfgFlagPostgresUsername = "postgres-username"
 	cfgFlagPostgresPassword = "postgres-password"
 
-	cfgFlagRedisURI      = "redis-uri"
-	cfgFlagRedisPassword = "redis-password"
+	cfgFlagRedisURI         = "redis-uri"
+	cfgFlagRedisPassword    = "redis-password"
+	cfgFlagRedisClusterMode = "redis-cluster-mode"
 
 	envVarPrefix = "REVOLUT_USERS_SVC"
 
 	defaultApiPort     = "8080"
-	defaultMetricsPort = "8081"
+	defaultMetricsPort = "9090"
 	defaultLogLevel    = "info"
 	defaultCORSOrigin  = "*"
 )
@@ -75,6 +76,7 @@ func main() {
 
 	viper.SetDefault(cfgFlagRedisURI, "")
 	viper.SetDefault(cfgFlagRedisPassword, "")
+	viper.SetDefault(cfgFlagRedisClusterMode, "")
 
 	viper.SetEnvPrefix(envVarPrefix)
 	viper.SetEnvKeyReplacer(strings.NewReplacer("-", "_"))
@@ -86,7 +88,6 @@ func main() {
 	defer func() {
 		err := logger.Sync()
 		if err != nil && !errors.Is(err, syscall.ENOTTY) {
-
 			logger.Warn("logger sync failed", zap.Error(err))
 		}
 	}()

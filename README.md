@@ -38,23 +38,47 @@ cp .envrc.template .envrc; export $(cat .envrc | xargs)
 ./build/server
 ```
 
+## Environment Variables
+
+| Environment Variable                 | Description                                           |
+| ------------------------------------ | ----------------------------------------------------- |
+| REVOLUT_USERS_SVC_HOST               | Host to expose HTTP API server                        |
+| REVOLUT_USERS_SVC_METRICS_PORT       | Port to export HTTP API server                        |
+| REVOLUT_USERS_SVC_LOG_LEVEL          | Log Level                                             |
+| REVOLUT_USERS_SVC_CORS_ORIGIN        | CORS Origin                                           |
+| REVOLUT_USERS_SVC_POSTGRES_HOST      | Postgres Host                                         |
+| REVOLUT_USERS_SVC_POSTGRES_PORT      | Postgres Port                                         |
+| REVOLUT_USERS_SVC_POSTGRES_USERNAME  | Postgres Username                                     |
+| REVOLUT_USERS_SVC_POSTGRES_PASSWORD  | Postgres Password                                     |
+| REVOLUT_USERS_SVC_POSTGRES_DATABASE  | Postgres Database                                     |
+| REVOLUT_USERS_SVC_REDIS_URI          | Redis URI                                             |
+| REVOLUT_USERS_SVC_REDIS_PASSWORD     | Redis Password                                        |
+| REVOLUT_USERS_SVC_REDIS_CLUSTER_MODE | Redis Cluster Mode. Use non-empty string to enable it |
+
+
 ## Testing
+
+Run the following commands to bootstrap the test database and run unit tests.
+
 ```bash
 make test-db
 make test
 ```
 
 ## Docker
+
+Build docker image and push them to the repository.
+
 ```bash
 export DOCKER_REPOSITORY=<REPO_URL>
 make docker
 make docker-push
 ```
 
-## OpenAPI
+## Swagger OpenAPI
 
 View the OpenAPI spec for this service at http://localhost:3000.
 
-## GitHub Actions
+## GitHub Actions (CI/CD)
 
-View the GitHub Actions Workflows under `.github` directory.
+View the GitHub Actions Workflows (CI Pipelines) under `.github` directory.
