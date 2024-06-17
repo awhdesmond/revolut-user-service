@@ -52,7 +52,7 @@ func (store *store) writeToCache(ctx context.Context, usr User) error {
 	}
 	cmd := store.rdb.Set(ctx, store.rdbUserKey(usr.Username), data, DefaultCacheTTL)
 	if cmd.Err() != nil {
-		store.logger.Error("cache error", zap.Error(err))
+		store.logger.Error("cache error", zap.Error(cmd.Err()))
 		return ErrUnexpectedDatabaseError
 	}
 	return nil
@@ -86,6 +86,7 @@ func (store *store) Read(ctx context.Context, username string) (User, error) {
 	if cmd.Err() != nil {
 		// unexpected error
 		if !errors.Is(cmd.Err(), redis.Nil) {
+			store.logger.Error("cache error", zap.Error(cmd.Err()))
 			return User{}, ErrUnexpectedDatabaseError
 		}
 		// else is key not found, so just fallthrough

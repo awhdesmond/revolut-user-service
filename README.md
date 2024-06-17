@@ -29,7 +29,7 @@ make db
 docker-compose up -d --no-deps --build api
 ```
 
-Or to build outside of docker:
+To run binary on local machine:
 
 ```bash
 make build
@@ -43,6 +43,13 @@ cp .envrc.template .envrc; export $(cat .envrc | xargs)
 ```bash
 make test-db
 make test
+```
+
+## Docker
+```bash
+export DOCKER_REPOSITORY=<REPO_URL>
+make docker
+make docker-push
 ```
 
 ## OpenAPI

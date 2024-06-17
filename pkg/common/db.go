@@ -40,6 +40,8 @@ func MakePostgresDBSession(cfg PostgresSQLConfig) (db.Session, error) {
 	db.LC().SetLevel(db.LogLevelError)
 	session.SetMaxIdleConns(db.DefaultSettings.MaxIdleConns())
 	session.SetMaxOpenConns(db.DefaultSettings.MaxOpenConns())
+	session.SetConnMaxLifetime(db.DefaultSettings.ConnMaxLifetime())
+	session.SetConnMaxIdleTime(db.DefaultSettings.ConnMaxIdleTime())
 
 	return session, nil
 }
@@ -54,21 +56,18 @@ func IsDBErrorNoRows(err error) bool {
 // Redis
 
 type RedisCfg struct {
-	URI string `mapstructure:"redis-uri"`
+	URI      string `mapstructure:"redis-uri"`
+	Password string `mapstructure:"redis-password"`
 }
 
-func redisOptsToUnivOpts(opts *redis.Options) *redis.UniversalOptions {
-	return &redis.UniversalOptions{
-		Addrs:    []string{opts.Addr},
-		Password: opts.Password,
-	}
-}
-
+// https://stackoverflow.com/questions/73907312/i-want-to-connect-to-elasticcache-for-redis-in-which-cluster-mode-is-enabled-i
+// https://docs.aws.amazon.com/AmazonElastiCache/latest/red-ug/Endpoints.html
 func MakeRedisClient(cfg RedisCfg) (redis.UniversalClient, error) {
-	opts, err := redis.ParseURL(cfg.URI)
-	if err != nil {
-		return nil, err
-	}
-	rdb := redis.NewUniversalClient(redisOptsToUnivOpts(opts))
+	rdb := redis.NewUniversalClient(
+		&redis.UniversalOptions{
+			Addrs:    []string{cfg.URI},
+			Password: cfg.Password,
+		},
+	)
 	return rdb, nil
 }
