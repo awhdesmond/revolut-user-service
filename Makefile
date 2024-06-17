@@ -6,7 +6,7 @@ LDFLAGS:="-s -w -X github.com/awhdesmond/revolut-user-service/pkg/common.GitComm
 .PHONY: build clean test db
 
 build:
-	go build -ldflags=$(LDFLAGS) -o build/server cmd/server/*.go
+	CGO_ENABLED=$(CGO_ENABLED) go build -ldflags=$(LDFLAGS) -o build/server cmd/server/*.go
 
 test:
 	go test ./... -short -timeout 120s -race -count 1 -v

@@ -23,6 +23,28 @@ services:
       - ./docs/swagger.yaml:/revolut-user-svc/swagger.yaml
     environment:
       - SWAGGER_JSON=/revolut-user-svc/swagger.yaml
-
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - 8080:8080
+      - 8081:8081
+    command: ./server
+    environment:
+      - REVOLUT_USERS_SVC_HOST=0.0.0.0
+      - REVOLUT_USERS_SVC_PORT=8080
+      - REVOLUT_USERS_SVC_METRICS_PORT=8081
+      - REVOLUT_USERS_SVC_LOG_LEVEL-debug
+      - REVOLUT_USERS_SVC_CORS_ORIGIN=*
+      - REVOLUT_USERS_SVC_POSTGRES_HOST=postgres
+      - REVOLUT_USERS_SVC_POSTGRES_PORT=5432
+      - REVOLUT_USERS_SVC_POSTGRES_USERNAME=postgres
+      - REVOLUT_USERS_SVC_POSTGRES_PASSWORD=postgres
+      - REVOLUT_USERS_SVC_POSTGRES_DATABASE=postgres
+      - REVOLUT_USERS_SVC_REDIS_URI=redis://redis:6379/0
+    depends_on:
+      - postgres
+      - redis
 volumes:
   postgres-data:

@@ -10,9 +10,7 @@ RUN go mod download
 COPY . .
 RUN make build
 
-FROM scratch
+FROM alpine:3.20.0
 
 WORKDIR /app
-COPY --from=build /usr/share/zoneinfo /usr/share/zoneinfo
-COPY --from=build /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
 COPY --from=build /app/build/ /app
