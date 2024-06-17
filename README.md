@@ -10,7 +10,6 @@ This service provides a HTTP-based API for managing users' date of birth.
 | Postgres   | 16.2    |
 | Redis      | 7.0     |
 
-
 ## Getting Started
 
 ```bash

@@ -54,20 +54,24 @@ func IsDBErrorNoRows(err error) bool {
 }
 
 // Redis
-
 type RedisCfg struct {
 	URI      string `mapstructure:"redis-uri"`
 	Password string `mapstructure:"redis-password"`
 }
 
-// https://stackoverflow.com/questions/73907312/i-want-to-connect-to-elasticcache-for-redis-in-which-cluster-mode-is-enabled-i
-// https://docs.aws.amazon.com/AmazonElastiCache/latest/red-ug/Endpoints.html
+func redisOptsToUnivOpts(opts *redis.Options, password string) *redis.UniversalOptions {
+	return &redis.UniversalOptions{
+		Addrs:    []string{opts.Addr},
+		Password: password,
+		DB:       opts.DB,
+	}
+}
+
 func MakeRedisClient(cfg RedisCfg) (redis.UniversalClient, error) {
-	rdb := redis.NewUniversalClient(
-		&redis.UniversalOptions{
-			Addrs:    []string{cfg.URI},
-			Password: cfg.Password,
-		},
-	)
+	opts, err := redis.ParseURL(cfg.URI)
+	if err != nil {
+		return nil, err
+	}
+	rdb := redis.NewUniversalClient(redisOptsToUnivOpts(opts, cfg.Password))
 	return rdb, nil
 }

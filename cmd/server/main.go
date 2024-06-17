@@ -31,7 +31,8 @@ const (
 	cfgFlagPostgresUsername = "postgres-username"
 	cfgFlagPostgresPassword = "postgres-password"
 
-	cfgFlagRedisURI = "redis-uri"
+	cfgFlagRedisURI      = "redis-uri"
+	cfgFlagRedisPassword = "redis-password"
 
 	envVarPrefix = "REVOLUT_USERS_SVC"
 
@@ -73,6 +74,7 @@ func main() {
 	viper.SetDefault(cfgFlagPostgresPassword, "")
 
 	viper.SetDefault(cfgFlagRedisURI, "")
+	viper.SetDefault(cfgFlagRedisPassword, "")
 
 	viper.SetEnvPrefix(envVarPrefix)
 	viper.SetEnvKeyReplacer(strings.NewReplacer("-", "_"))
