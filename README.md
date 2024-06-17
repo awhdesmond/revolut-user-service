@@ -2,6 +2,8 @@
 
 This service provides a HTTP-based API for managing users' date of birth.
 
+The structure of the code follows the Clean Architecture approach. In addition, we added a write-through cache since by observation, services that manages users's profile information tends to be read heavy.
+
 ## Dependencies
 
 | Dependency | Version |
@@ -70,7 +72,9 @@ make test
 Build docker image and push them to the repository.
 
 ```bash
-export DOCKER_REPOSITORY=<REPO_URL>
+export CONTAINER_REGISTRY=<REGISTRY_URL>
+export CONTAINER_REPOSITORY=<REPOSITORY>
+
 make docker
 make docker-push
 ```

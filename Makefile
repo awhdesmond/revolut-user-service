@@ -3,8 +3,9 @@ CGO_ENABLED?=0
 BINARY:=server
 LDFLAGS:="-s -w -X github.com/awhdesmond/revolut-user-service/pkg/common.GitCommit=$(GITCOMMIT)"
 
-DOCKER_IMAGE?=revolut-user-service_api
-DOCKER_REPOSITORY?=974860574511.dkr.ecr.eu-west-1.amazonaws.com/revolut-user-service
+CONTAINER_IMAGE?=revolut-user-service_api
+CONTAINER_REGISTRY?=974860574511.dkr.ecr.eu-west-1.amazonaws.com
+CONTAINER_REPOSITORY?=revolut-user-service
 
 .PHONY: build clean test db
 
@@ -29,11 +30,13 @@ test-db:
 	./scripts/migrate-db.sh postgres_test
 
 docker:
-	docker build -t $(DOCKER_IMAGE):$(GITCOMMIT) .
-	docker tag $(DOCKER_IMAGE):$(GITCOMMIT) $(DOCKER_REPOSITORY):$(GITCOMMIT)
+	docker build -t $(CONTAINER_IMAGE):$(GITCOMMIT) .
+	docker tag $(CONTAINER_IMAGE):$(GITCOMMIT) $(CONTAINER_REGISTRY)/$(CONTAINER_REPOSITORY):$(GITCOMMIT)
 
 docker-push:
-	docker push $(DOCKER_REPOSITORY):$(GITCOMMIT)
+	aws ecr get-login-password --region eu-west-1 --profile terraform \
+		| docker login --username AWS --password-stdin $(CONTAINER_REGISTRY)
+	docker push $(CONTAINER_REGISTRY)/$(CONTAINER_REPOSITORY):$(GITCOMMIT)
 
 clean:
 	rm -rf build cover.html coverage.out

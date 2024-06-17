@@ -53,6 +53,13 @@ type ServerConfig struct {
 	CORSOrigin  string `mapstructure:"cors-origin"`
 }
 
+func (cfg ServerConfig) RedactedString() string {
+	tmp := cfg
+	tmp.PostgresSQLConfig.Password = "***"
+	tmp.RedisCfg.Password = "***"
+	return fmt.Sprintf("%v", cfg)
+}
+
 func (cfg ServerConfig) HTTPBindAddress() string {
 	return fmt.Sprintf("%s:%s", cfg.Host, cfg.Port)
 }
@@ -98,7 +105,7 @@ func main() {
 		logger.Panic("config unmarshal failed", zap.Error(err))
 	}
 
-	logger.Info("server configuration", zap.String("config", fmt.Sprintf("%+v", srvCfg)))
+	logger.Info("server configuration", zap.String("config", srvCfg.RedactedString()))
 
 	// Make Server
 	apiSrv, err := makeAPIServer(srvCfg, logger)
