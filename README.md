@@ -92,6 +92,8 @@ CREATE TABLE users (
 );
 ```
 
+> We store `date_of_birth` using UTC timezone.
+
 ## Swagger OpenAPI
 
 View the OpenAPI spec for this service at http://localhost:3000.
