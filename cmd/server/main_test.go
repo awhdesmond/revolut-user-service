@@ -148,7 +148,7 @@ func (ts *ApiTestSuite) testHealth() {
 
 	req, err := http.NewRequest(
 		http.MethodGet,
-		"http://localhost:8080/healthz",
+		fmt.Sprintf("http://localhost:%s/healthz", testPort),
 		nil,
 	)
 	if err != nil {
