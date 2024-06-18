@@ -2,7 +2,7 @@
 
 This service provides a HTTP-based API for managing users' date of birth.
 
-The structure of the code follows the Clean Architecture approach. In addition, we added a write-through cache since by observation, services that manages users's profile information tends to be read heavy.
+A description of the code can be found in the [`docs`](./docs/architecture.md).
 
 ## Dependencies
 
@@ -11,6 +11,7 @@ The structure of the code follows the Clean Architecture approach. In addition, 
 | Go         | 1.20    |
 | Postgres   | 16.2    |
 | Redis      | 7.0     |
+| Flyway     | 10.0    |
 
 ## Getting Started
 
@@ -77,6 +78,18 @@ export CONTAINER_REPOSITORY=<REPOSITORY>
 
 make docker
 make docker-push
+```
+
+## Data Schema & Flyway
+
+Flyway is an open-source database-migration tool that helps us to version control our data schemas.
+
+```sql
+CREATE TABLE users (
+    "username" TEXT NOT NULL,
+    "date_of_birth" TIMESTAMP NOT NULL,
+    constraint users_pk primary key (username)
+);
 ```
 
 ## Swagger OpenAPI

@@ -6,6 +6,7 @@ LDFLAGS:="-s -w -X github.com/awhdesmond/revolut-user-service/pkg/common.GitComm
 CONTAINER_IMAGE?=revolut-user-service_api
 CONTAINER_REGISTRY?=974860574511.dkr.ecr.eu-west-1.amazonaws.com
 CONTAINER_REPOSITORY?=revolut-user-service
+IMAGE_TAG?=$(GITCOMMIT)
 
 .PHONY: build clean test db
 
@@ -31,12 +32,12 @@ test-db:
 
 docker:
 	docker build -t $(CONTAINER_IMAGE):$(GITCOMMIT) .
-	docker tag $(CONTAINER_IMAGE):$(GITCOMMIT) $(CONTAINER_REGISTRY)/$(CONTAINER_REPOSITORY):$(GITCOMMIT)
+	docker tag $(CONTAINER_IMAGE):$(GITCOMMIT) $(CONTAINER_REGISTRY)/$(CONTAINER_REPOSITORY):$(IMAGE_TAG)
 
 docker-push:
 	aws ecr get-login-password --region eu-west-1 --profile terraform \
 		| docker login --username AWS --password-stdin $(CONTAINER_REGISTRY)
-	docker push $(CONTAINER_REGISTRY)/$(CONTAINER_REPOSITORY):$(GITCOMMIT)
+	docker push $(CONTAINER_REGISTRY)/$(CONTAINER_REPOSITORY):$(IMAGE_TAG)
 
 clean:
 	rm -rf build cover.html coverage.out
