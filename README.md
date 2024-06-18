@@ -18,7 +18,7 @@ A description of the code can be found in the [`docs`](./docs/architecture.md).
 ```bash
 # Deploy Postgres, Redis, Swagger OpenAPI
 # and HTTP API using docker-compose
-docker-compose up -d
+docker compose up -d --build
 
 # Perform SQL migrations on postgres
 brew install flyway
@@ -28,7 +28,7 @@ make db
 ./scripts/simple-query.sh
 
 # Rebuild container image when you made changes
-docker-compose up -d --no-deps --build api
+docker compose up -d --no-deps --build api
 ```
 
 To run binary on local machine:

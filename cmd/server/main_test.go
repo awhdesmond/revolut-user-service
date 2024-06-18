@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"os"
 	"testing"
@@ -14,11 +15,26 @@ import (
 	"github.com/stretchr/testify/suite"
 )
 
+const (
+	testPort       = "18080"
+	testMetricPort = "19090"
+)
+
+var (
+	envPort       = ""
+	envMetricPort = ""
+)
+
 type testSuite struct {
 	suite.Suite
 }
 
 func (ts *testSuite) SetupSuite() {
+	envPort = os.Getenv("REVOLUT_USERS_SVC_PORT")
+	envMetricPort = os.Getenv("REVOLUT_USERS_SVC_METRICS_PORT")
+
+	os.Setenv("REVOLUT_USERS_SVC_PORT", testPort)
+	os.Setenv("REVOLUT_USERS_SVC_METRICS_PORT", testMetricPort)
 	os.Setenv("REVOLUT_USERS_SVC_POSTGRES_HOST", "localhost")
 	os.Setenv("REVOLUT_USERS_SVC_POSTGRES_PORT", "5432")
 	os.Setenv("REVOLUT_USERS_SVC_POSTGRES_USERNAME", "postgres")
@@ -52,6 +68,10 @@ func (ts *testSuite) TearDownSuite() {
 		ts.T().Log(err)
 	}
 	rdb.FlushDB(context.TODO())
+
+	// Set back env vars
+	os.Setenv("REVOLUT_USERS_SVC_PORT", envPort)
+	os.Setenv("REVOLUT_USERS_SVC_METRICS_PORT", envMetricPort)
 }
 
 type ApiTestSuite struct {
@@ -76,7 +96,7 @@ func (ts *ApiTestSuite) testUpsertAndRead() {
 	bodyReader := bytes.NewReader(jsonBody)
 	req, err := http.NewRequest(
 		http.MethodPut,
-		"http://localhost:8080/hello/apple",
+		fmt.Sprintf("http://localhost:%s/hello/apple", testPort),
 		bodyReader,
 	)
 	if err != nil {
@@ -95,7 +115,7 @@ func (ts *ApiTestSuite) testUpsertAndRead() {
 
 	req, err = http.NewRequest(
 		http.MethodGet,
-		"http://localhost:8080/hello/apple",
+		fmt.Sprintf("http://localhost:%s/hello/apple", testPort),
 		nil,
 	)
 	if err != nil {

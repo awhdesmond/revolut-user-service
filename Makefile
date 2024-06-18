@@ -25,7 +25,7 @@ db:
 	./scripts/migrate-db.sh postgres
 
 test-db:
-	docker exec revolut-user-service_postgres_1 \
+	docker exec revolut-user-service-postgres-1 \
 		psql -U postgres -c 'CREATE DATABASE postgres_test WITH OWNER postgres' || true
 	./scripts/clean-db.sh postgres_test
 	./scripts/migrate-db.sh postgres_test

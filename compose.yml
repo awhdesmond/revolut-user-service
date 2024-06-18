@@ -46,6 +46,7 @@ services:
       - REVOLUT_USERS_SVC_POSTGRES_DATABASE=postgres
       - REVOLUT_USERS_SVC_REDIS_URI=redis://redis:6379/0
       - REVOLUT_USERS_SVC_REDIS_PASSWORD=password
+    restart: always
     depends_on:
       - postgres
       - redis
