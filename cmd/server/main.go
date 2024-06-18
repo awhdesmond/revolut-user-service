@@ -57,7 +57,7 @@ func (cfg ServerConfig) RedactedString() string {
 	tmp := cfg
 	tmp.PostgresSQLConfig.Password = "***"
 	tmp.RedisCfg.Password = "***"
-	return fmt.Sprintf("%v", cfg)
+	return fmt.Sprintf("%+v", tmp)
 }
 
 func (cfg ServerConfig) HTTPBindAddress() string {
